@@ -36,8 +36,8 @@ INFERENCE_SCOPE = f"https://auth.globus.org/scopes/{INFERENCE_CLIENT_ID}/action_
 IRI_CLIENT_ID = "6be511f6-a071-471f-9bc0-02a0d0836723"
 IRI_SCOPE = f"https://auth.globus.org/scopes/{IRI_CLIENT_ID}/filesystem"
 
-# Globus Compute
-COMPUTE_CLIENT_ID = "facd7ccc-c5f4-42aa-916b-a0e270e2c2a9"
+# Globus Compute (resource server key is the legacy "funcx_service" name)
+COMPUTE_CLIENT_ID = "funcx_service"
 COMPUTE_SCOPE = "https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/all"
 
 # Mapping: friendly name -> resource server ID
