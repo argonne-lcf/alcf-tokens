@@ -4,7 +4,7 @@ import logging
 import httpx
 import typer
 
-from .auth import AuthError, get_access_token, login as auth_login, SCOPE_RESOURCE_SERVERS, TOKENS_PATH
+from .auth import AuthError, get_access_token, login as auth_login, SCOPE_RESOURCE_SERVERS, SERVICES, TOKENS_PATH
 
 logger = logging.getLogger(__name__)
 
@@ -25,13 +25,25 @@ def main(log_level: str = "WARNING") -> None:
 
 
 @auth_cli.command()
-def login() -> None:
+def login(
+    service: str | None = typer.Argument(
+        None,
+        help=(
+            "Re-authenticate for a single service only, preserving other tokens. "
+            f"Valid values: {', '.join(sorted(SERVICES))}."
+        ),
+    ),
+) -> None:
     """
-    Log in with Globus. Triggers a single authentication flow that gathers
-    access tokens for all supported services. Credentials are stored in your
-    home directory.
+    Log in with Globus. By default, triggers a single authentication flow that
+    gathers access tokens for all supported services. Optionally pass a service
+    name to re-authenticate for one service only without affecting other stored tokens.
     """
-    auth_login()
+    if service is not None and service not in SERVICES:
+        valid = ", ".join(sorted(SERVICES))
+        typer.echo(f"Unknown service '{service}'. Valid values: {valid}", err=True)
+        raise typer.Exit(code=1)
+    auth_login(service)
 
 
 @auth_cli.command()

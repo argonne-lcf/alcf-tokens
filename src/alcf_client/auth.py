@@ -1,5 +1,6 @@
 import logging
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 import globus_sdk
@@ -21,44 +22,45 @@ AUTH_CLIENT_ID = "7f3e61f5-e0de-4e8f-9150-0a62c65dda63"
 
 TOKENS_PATH = Path.home() / f".globus/app/{AUTH_CLIENT_ID}/{APP_NAME}/tokens.json"
 
-# TODO: Enforce appropriate policy when login to specific service
-# Globus authorization parameters to enforce specific identity provider policies
-#GA_PARAMS = globus_sdk.gare.GlobusAuthorizationParameters(
-#    session_required_policies=["UUID"]
-#)
-GA_PARAMS = globus_sdk.gare.GlobusAuthorizationParameters()
 
-# ALCF Inference Service
-INFERENCE_CLIENT_ID = "681c10cc-f684-4540-bcd7-0b4df3bc26ef"
-INFERENCE_SCOPE = f"https://auth.globus.org/scopes/{INFERENCE_CLIENT_ID}/action_all"
+@dataclass
+class ServiceConfig:
+    resource_server: str
+    scope: str
+    session_policy: str | None = None
 
-# ALCF IRI API
-IRI_CLIENT_ID = "6be511f6-a071-471f-9bc0-02a0d0836723"
-IRI_SCOPE = f"https://auth.globus.org/scopes/{IRI_CLIENT_ID}/filesystem"
 
-# Globus Compute (resource server key is the legacy "funcx_service" name)
-COMPUTE_CLIENT_ID = "funcx_service"
-COMPUTE_SCOPE = "https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/all"
-
-# Mapping: friendly name -> resource server ID
-SCOPE_RESOURCE_SERVERS: dict[str, str] = {
-    "inference": INFERENCE_CLIENT_ID,
-    "iri": IRI_CLIENT_ID,
-    "globus-compute": COMPUTE_CLIENT_ID,
+SERVICES: dict[str, ServiceConfig] = {
+    "inference": ServiceConfig(
+        resource_server="681c10cc-f684-4540-bcd7-0b4df3bc26ef",
+        scope="https://auth.globus.org/scopes/681c10cc-f684-4540-bcd7-0b4df3bc26ef/action_all",
+        session_policy="83732ff2-9c42-4548-b5ce-17e498c84f6a",
+    ),
+    "iri": ServiceConfig(
+        resource_server="6be511f6-a071-471f-9bc0-02a0d0836723",
+        scope="https://auth.globus.org/scopes/6be511f6-a071-471f-9bc0-02a0d0836723/filesystem",
+        session_policy="a128e981-c9a5-417a-97ab-8571c9831bff",
+    ),
+    "globus-compute": ServiceConfig(
+        resource_server="funcx_service",
+        scope="https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/all",
+        session_policy=None,
+    ),
 }
+
+SCOPE_RESOURCE_SERVERS: dict[str, str] = {
+    name: svc.resource_server for name, svc in SERVICES.items()
+}
+
 
 class DomainBasedErrorHandler:
     def __call__(self, app: globus_sdk.GlobusApp, error: Exception) -> None:
         logger.error(f"Encountered error '{error}', initiating login...")
-        app.login(auth_params=GA_PARAMS)
+        app.login()
 
 
 def _build_scope_requirements() -> dict[str, list[str]]:
-    return {
-        INFERENCE_CLIENT_ID: [INFERENCE_SCOPE],
-        IRI_CLIENT_ID: [IRI_SCOPE],
-        COMPUTE_CLIENT_ID: [COMPUTE_SCOPE],
-    }
+    return {svc.resource_server: [svc.scope] for svc in SERVICES.values()}
 
 
 def build_user_app() -> globus_sdk.UserApp:
@@ -73,9 +75,34 @@ def build_user_app() -> globus_sdk.UserApp:
     )
 
 
-def login() -> None:
-    app = build_user_app()
-    app.login(auth_params=GA_PARAMS)
+def _make_auth_params(service_name: str | None) -> globus_sdk.gare.GlobusAuthorizationParameters:
+    if service_name is not None:
+        policy = SERVICES[service_name].session_policy
+        if policy:
+            return globus_sdk.gare.GlobusAuthorizationParameters(
+                session_required_policies=[policy]
+            )
+    return globus_sdk.gare.GlobusAuthorizationParameters()
+
+
+def login(service_name: str | None = None) -> None:
+    if service_name is not None:
+        svc = SERVICES[service_name]
+        app = globus_sdk.UserApp(
+            APP_NAME,
+            client_id=AUTH_CLIENT_ID,
+            scope_requirements={svc.resource_server: [svc.scope]},
+            config=globus_sdk.GlobusAppConfig(request_refresh_tokens=True),
+        )
+        app.login(auth_params=_make_auth_params(service_name))
+    else:
+        combined_policies = [
+            svc.session_policy for svc in SERVICES.values() if svc.session_policy
+        ]
+        auth_params = globus_sdk.gare.GlobusAuthorizationParameters(
+            session_required_policies=combined_policies if combined_policies else None
+        )
+        build_user_app().login(auth_params=auth_params)
 
 
 def get_authorizer(resource_server: str) -> GlobusAuthorizer:
@@ -84,17 +111,17 @@ def get_authorizer(resource_server: str) -> GlobusAuthorizer:
 
 
 def get_access_token(name: str) -> str:
-    if name not in SCOPE_RESOURCE_SERVERS:
-        valid = ", ".join(sorted(SCOPE_RESOURCE_SERVERS))
+    if name not in SERVICES:
+        valid = ", ".join(sorted(SERVICES))
         raise AuthError(f"Unknown token name '{name}'. Valid names: {valid}")
 
     if not TOKENS_PATH.is_file():
         raise AuthError(
             "No tokens found. "
-            f'Please authenticate first by running "{sys.argv[0]} login".'
+            f'Please authenticate first by running "{sys.argv[0]} auth login".'
         )
 
-    resource_server = SCOPE_RESOURCE_SERVERS[name]
+    resource_server = SERVICES[name].resource_server
     auth = get_authorizer(resource_server)
     auth.ensure_valid_token()  # type: ignore[attr-defined]
     return auth.access_token  # type: ignore[attr-defined]
