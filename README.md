@@ -26,16 +26,6 @@ conda activate alcf-client
 pip install .
 ```
 
-### venv (`python>=3.12`)
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install .
-```
-
-> **Note:** On Windows, activate with `.venv\Scripts\activate` instead.
-
 Once installed, `alcf-client` is available in the active environment:
 ```bash
 alcf-client --help
