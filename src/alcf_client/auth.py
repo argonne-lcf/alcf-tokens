@@ -94,15 +94,9 @@ def login(service_name: str | None = None) -> None:
             scope_requirements={svc.resource_server: [svc.scope]},
             config=globus_sdk.GlobusAppConfig(request_refresh_tokens=True),
         )
-        app.login(auth_params=_make_auth_params(service_name))
+        app.login(auth_params=_make_auth_params(service_name), force=True)
     else:
-        combined_policies = [
-            svc.session_policy for svc in SERVICES.values() if svc.session_policy
-        ]
-        auth_params = globus_sdk.gare.GlobusAuthorizationParameters(
-            session_required_policies=combined_policies if combined_policies else None
-        )
-        build_user_app().login(auth_params=auth_params)
+        build_user_app().login(force=True)
 
 
 def get_authorizer(resource_server: str) -> GlobusAuthorizer:
