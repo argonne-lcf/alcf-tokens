@@ -7,6 +7,7 @@ readme = "README.md"
 dependencies = [
     "typer",
     "globus-sdk>=3.65.0,<4",
+    "httpx",
 ]
 
 [project.scripts]
