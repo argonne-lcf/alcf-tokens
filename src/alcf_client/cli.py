@@ -8,8 +8,8 @@ from .auth import AuthError, get_access_token, login as auth_login, SCOPE_RESOUR
 
 logger = logging.getLogger(__name__)
 
-cli = typer.Typer(no_args_is_help=True)
-auth_cli = typer.Typer(no_args_is_help=True)
+cli = typer.Typer(no_args_is_help=True, add_completion=False)
+auth_cli = typer.Typer(no_args_is_help=True, add_completion=False)
 cli.add_typer(auth_cli, name="auth", help="Login and manage access tokens")
 
 
