@@ -1,7 +1,6 @@
 import logging
 import sys
 from pathlib import Path
-from typing import Literal
 
 import globus_sdk
 import globus_sdk.gare
@@ -47,9 +46,6 @@ SCOPE_RESOURCE_SERVERS: dict[str, str] = {
     "iri": IRI_CLIENT_ID,
     "globus-compute": COMPUTE_CLIENT_ID,
 }
-
-TokenName = Literal["inference", "iri"]
-
 
 class DomainBasedErrorHandler:
     def __call__(self, app: globus_sdk.GlobusApp, error: Exception) -> None:
