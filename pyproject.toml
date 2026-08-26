@@ -1,0 +1,24 @@
+[project]
+name = "alcf-client"
+dynamic = ["version"]
+description = "ALCF client to interface with various services"
+requires-python = ">=3.12"
+readme = "README.md"
+dependencies = [
+    "typer",
+    "globus-sdk>=3.65.0,<4",
+]
+
+[project.scripts]
+alcf-client = "alcf_client.cli:cli"
+
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
