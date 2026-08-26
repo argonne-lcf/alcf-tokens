@@ -26,7 +26,7 @@ conda activate alcf-client
 pip install .
 ```
 
-### venv (python>=3.12)
+### venv (`python>=3.12`)
 
 ```bash
 python3 -m venv .venv
