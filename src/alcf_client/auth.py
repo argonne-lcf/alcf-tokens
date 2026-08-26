@@ -20,6 +20,7 @@ APP_NAME = "alcf_client"
 # Public native app client registered with Globus
 AUTH_CLIENT_ID = "7f3e61f5-e0de-4e8f-9150-0a62c65dda63"
 
+# Path to tokens.json file where all the tokens are stored
 TOKENS_PATH = Path.home() / f".globus/app/{AUTH_CLIENT_ID}/{APP_NAME}/tokens.json"
 
 
