@@ -1,5 +1,7 @@
+import json
 import logging
 
+import httpx
 import typer
 
 from .auth import AuthError, get_access_token, login as auth_login, SCOPE_RESOURCE_SERVERS, TOKENS_PATH
@@ -59,6 +61,55 @@ def get_token(
         raise typer.Exit(code=1)
 
     print(token)
+
+
+_TEST_ENDPOINTS: dict[str, str | None] = {
+    "inference": "https://inference-api.alcf.anl.gov/resource_server/whoami",
+    "iri": "https://api.alcf.anl.gov/api/v1/account/projects",
+    "globus-compute": None,
+}
+
+
+@auth_cli.command()
+def test_token(
+    service: str = typer.Argument(
+        ...,
+        help=(
+            "The service to test the token against. "
+            f"Valid values: {', '.join(sorted(SCOPE_RESOURCE_SERVERS))}."
+        ),
+    ),
+) -> None:
+    """
+    Test whether the stored token for a service is accepted.
+
+    Examples:
+        alcf-client auth test-token inference
+        alcf-client auth test-token iri
+    """
+    if service not in SCOPE_RESOURCE_SERVERS:
+        valid = ", ".join(sorted(SCOPE_RESOURCE_SERVERS))
+        typer.echo(json.dumps({"ready": False, "error": f"Unknown service '{service}'. Valid values: {valid}"}))
+        raise typer.Exit(code=1)
+
+    endpoint = _TEST_ENDPOINTS.get(service)
+    if endpoint is None:
+        typer.echo(f"test-token is not yet implemented for '{service}'", err=True)
+        raise typer.Exit(code=0)
+
+    try:
+        token = get_access_token(service)
+    except AuthError as exc:
+        typer.echo(json.dumps({"ready": False, "error": str(exc)}))
+        raise typer.Exit(code=1)
+
+    response = httpx.get(endpoint, headers={"Authorization": f"Bearer {token}"})
+
+    if response.status_code == 200:
+        typer.echo(json.dumps({"ready": True, "error": None}))
+    else:
+        typer.echo(json.dumps({"ready": False, "error": f"HTTP {response.status_code}: {response.text}"}))
+        raise typer.Exit(code=1)
 
 
 @auth_cli.command()
