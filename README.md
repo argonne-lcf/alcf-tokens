@@ -1,7 +1,7 @@
 # ALCF Client
 Centralized ALCF CLI tool to generate and retrieve Globus access tokens for the following services:
 
-| Service | `<service-name>` |
+| Service | service-name |
 |---|---|
 | [ALCF Inference Service](https://docs.alcf.anl.gov/services/inference-endpoints/) | `inference` |
 | [ALCF IRI API](https://docs.alcf.anl.gov/services/iri-api/) | `iri` |
