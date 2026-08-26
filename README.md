@@ -1,9 +1,11 @@
 # ALCF Client
 Centralized ALCF CLI tool to generate and retrieve Globus access tokens for the following services:
 
-- [ALCF Inference Service](https://docs.alcf.anl.gov/services/inference-endpoints/)
-- [ALCF IRI API](https://docs.alcf.anl.gov/services/iri-api/)
-- [Globus Compute](https://www.globus.org/compute)
+| Service | `<service-name>` |
+|---|---|
+| [ALCF Inference Service](https://docs.alcf.anl.gov/services/inference-endpoints/) | `inference` |
+| [ALCF IRI API](https://docs.alcf.anl.gov/services/iri-api/) | `iri` |
+| [Globus Compute](https://www.globus.org/compute) | `globus-compute` |
 
 
 ## Installation
@@ -51,24 +53,19 @@ alcf-client auth login
 
 Re-authenticate for a specific service only:
 ```bash
-alcf-client auth login inference
-alcf-client auth login iri
-alcf-client auth login globus-compute
+alcf-client auth login <service-name>
 ```
 
 ### Retrieve a token
 
 ```bash
-alcf-client auth get-token inference
-alcf-client auth get-token iri
-alcf-client auth get-token globus-compute
+alcf-client auth get-token <service-name>
 ```
 
 ### Test a token
 
 ```bash
-alcf-client auth test-token inference
-alcf-client auth test-token iri
+alcf-client auth test-token <service-name>
 ```
 
 Output: `{"ready": true, "error": null}` on success.
