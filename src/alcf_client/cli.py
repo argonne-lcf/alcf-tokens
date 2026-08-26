@@ -75,9 +75,9 @@ def get_token(
     print(token)
 
 
-_TEST_ENDPOINTS: dict[str, str | None] = {
-    "inference": "https://inference-api.alcf.anl.gov/resource_server/whoami",
-    "iri": "https://api.alcf.anl.gov/api/v1/account/projects",
+_TEST_ENDPOINTS: dict[str, tuple[str, int] | None] = {
+    "inference": ("https://inference-api.alcf.anl.gov/resource_server/whoami", 200),
+    "iri": ("https://api.alcf.anl.gov/api/v1/task/not-a-real-task", 404),
     "globus-compute": None,
 }
 
@@ -104,8 +104,8 @@ def test_token(
         typer.echo(json.dumps({"ready": False, "error": f"Unknown service '{service}'. Valid values: {valid}"}))
         raise typer.Exit(code=1)
 
-    endpoint = _TEST_ENDPOINTS.get(service)
-    if endpoint is None:
+    test_config = _TEST_ENDPOINTS.get(service)
+    if test_config is None:
         typer.echo(f"test-token is not yet implemented for '{service}'", err=True)
         raise typer.Exit(code=0)
 
@@ -115,9 +115,10 @@ def test_token(
         typer.echo(json.dumps({"ready": False, "error": str(exc)}))
         raise typer.Exit(code=1)
 
+    endpoint, expected_status = test_config
     response = httpx.get(endpoint, headers={"Authorization": f"Bearer {token}"})
 
-    if response.status_code == 200:
+    if response.status_code == expected_status:
         typer.echo(json.dumps({"ready": True, "error": None}))
     else:
         typer.echo(json.dumps({"ready": False, "error": f"HTTP {response.status_code}: {response.text}"}))
