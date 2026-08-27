@@ -28,6 +28,8 @@ TOKENS_PATH = Path.home() / f".globus/app/{AUTH_CLIENT_ID}/{APP_NAME}/tokens.jso
 class ServiceConfig:
     resource_server: str
     scope: str
+    description: str
+    documentation_url: str
     session_policy: str | None = None
 
 
@@ -36,16 +38,22 @@ SERVICES: dict[str, ServiceConfig] = {
         resource_server="681c10cc-f684-4540-bcd7-0b4df3bc26ef",
         scope="https://auth.globus.org/scopes/681c10cc-f684-4540-bcd7-0b4df3bc26ef/action_all",
         session_policy="83732ff2-9c42-4548-b5ce-17e498c84f6a",
+        description="ALCF Inference Service",
+        documentation_url="https://docs.alcf.anl.gov/services/inference-endpoints/",
     ),
     "iri": ServiceConfig(
         resource_server="6be511f6-a071-471f-9bc0-02a0d0836723",
         scope="https://auth.globus.org/scopes/6be511f6-a071-471f-9bc0-02a0d0836723/filesystem",
         session_policy="a128e981-c9a5-417a-97ab-8571c9831bff",
+        description="ALCF Integrated Research Infrastructure (IRI) API",
+        documentation_url="https://docs.alcf.anl.gov/services/iri-api/",
     ),
     "globus-compute": ServiceConfig(
         resource_server="funcx_service",
         scope="https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/all",
         session_policy=None,
+        description="Globus Compute",
+        documentation_url="https://www.globus.org/compute",
     ),
 }
 
