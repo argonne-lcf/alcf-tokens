@@ -7,11 +7,11 @@ Centralized ALCF CLI tool to generate and retrieve Globus access tokens for the 
 | [ALCF IRI API](https://docs.alcf.anl.gov/services/iri-api/) | `iri` |
 | [Globus Compute](https://www.globus.org/compute) | `globus-compute` |
 
-## Prerequisites
+## 1. Prerequisites
 
 - Python >= 3.10
 
-## Installation
+## 2. Installation
 
 ### Pip
 
@@ -56,7 +56,7 @@ source .venv/bin/activate
 uv pip install git+https://github.com/argonne-lcf/alcf-client
 ```
 
-## Usage
+## 3. Usage
 
 ### Test installation
 
