@@ -30,7 +30,7 @@ conda activate alcf-client
 pip install .
 ```
 
-### Uv (recommended)
+### Uv
 
 We recommend using `alcf-client` as a standalone tool with [uv](https://docs.astral.sh/uv/getting-started/installation/), which sidesteps the need to manually create a virtual environment.
 
