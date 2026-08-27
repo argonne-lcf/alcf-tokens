@@ -7,10 +7,30 @@ Centralized ALCF CLI tool to generate and retrieve Globus access tokens for the 
 | [ALCF IRI API](https://docs.alcf.anl.gov/services/iri-api/) | `iri` |
 | [Globus Compute](https://www.globus.org/compute) | `globus-compute` |
 
+## 1. Prerequisites
 
-## Installation
+- Python >= 3.10
 
-### uv (recommended)
+## 2. Installation
+
+### Pip
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install .
+```
+If you do not see `alcf-client`, try to deactivate and reactivate your environment.
+
+### Conda
+
+```bash
+conda create -n alcf-client python=3.12 -y
+conda activate alcf-client
+pip install .
+```
+
+### Uv
 
 We recommend using `alcf-client` as a standalone tool with [uv](https://docs.astral.sh/uv/getting-started/installation/), which sidesteps the need to manually create a virtual environment.
 
@@ -36,29 +56,14 @@ source .venv/bin/activate
 uv pip install git+https://github.com/argonne-lcf/alcf-client
 ```
 
-### pip
+## 3. Usage
 
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install .
-```
+### Test installation
 
-### conda
-
-```bash
-conda create -n alcf-client python=3.12
-conda activate alcf-client
-pip install .
-```
-
-Once installed, `alcf-client` is available in the active environment:
+Once installed, you should be able to access the `alcf-client` from your active environment:
 ```bash
 alcf-client --help
 ```
-
-
-## Usage
 
 ### Authentication
 
