@@ -2,10 +2,12 @@ import logging
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 import globus_sdk
 import globus_sdk.gare
 from globus_sdk.authorizers import GlobusAuthorizer
+from globus_sdk.scopes import GCSCollectionScopeBuilder, TransferScopes
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +24,9 @@ AUTH_CLIENT_ID = "7f3e61f5-e0de-4e8f-9150-0a62c65dda63"
 
 # Path to tokens.json file where all the tokens are stored
 TOKENS_PATH = Path.home() / f".globus/app/{AUTH_CLIENT_ID}/{APP_NAME}/tokens.json"
+
+# Globus Transfer resource server
+TRANSFER_RESOURCE_SERVER = TransferScopes.resource_server
 
 
 @dataclass
@@ -55,6 +60,13 @@ SERVICES: dict[str, ServiceConfig] = {
         description="Globus Compute",
         documentation_url="https://www.globus.org/compute",
     ),
+    "globus-transfer": ServiceConfig(
+        resource_server=TRANSFER_RESOURCE_SERVER,
+        scope=TransferScopes.all,
+        session_policy=None,
+        description="Globus Transfer",
+        documentation_url="https://www.globus.org/data-transfer",
+    ),
 }
 
 SCOPE_RESOURCE_SERVERS: dict[str, str] = {
@@ -68,15 +80,32 @@ class DomainBasedErrorHandler:
         app.login()
 
 
-def _build_scope_requirements() -> dict[str, list[str]]:
-    return {svc.resource_server: [svc.scope] for svc in SERVICES.values()}
+def _build_scope_requirements(
+    transfer_collection_id: str | None = None,
+) -> dict[str, Any]:
+    base: dict[str, Any] = {
+        svc.resource_server: [svc.scope] for svc in SERVICES.values()
+    }
+
+    if transfer_collection_id is not None:
+        transfer_scope = TransferScopes.make_mutable("all")
+        collection_id, *gcs_scopes = transfer_collection_id.split(":")
+        if "data_access" in gcs_scopes:
+            data_access = GCSCollectionScopeBuilder(collection_id).make_mutable(
+                "data_access", optional=True
+            )
+            transfer_scope.add_dependency(data_access)
+            base[collection_id] = [data_access]
+        base[TRANSFER_RESOURCE_SERVER] = [transfer_scope]
+
+    return base
 
 
-def build_user_app() -> globus_sdk.UserApp:
+def build_user_app(transfer_collection_id: str | None = None) -> globus_sdk.UserApp:
     return globus_sdk.UserApp(
         APP_NAME,
         client_id=AUTH_CLIENT_ID,
-        scope_requirements=_build_scope_requirements(),
+        scope_requirements=_build_scope_requirements(transfer_collection_id),
         config=globus_sdk.GlobusAppConfig(
             request_refresh_tokens=True,
             token_validation_error_handler=DomainBasedErrorHandler(),
@@ -94,8 +123,13 @@ def _make_auth_params(service_name: str | None) -> globus_sdk.gare.GlobusAuthori
     return globus_sdk.gare.GlobusAuthorizationParameters()
 
 
-def login(service_name: str | None = None) -> None:
-    if service_name is not None:
+def login(
+    service_name: str | None = None,
+    transfer_collection_id: str | None = None,
+) -> None:
+    if service_name == "globus-transfer":
+        build_user_app(transfer_collection_id).login(force=True)
+    elif service_name is not None:
         svc = SERVICES[service_name]
         app = globus_sdk.UserApp(
             APP_NAME,
@@ -105,7 +139,7 @@ def login(service_name: str | None = None) -> None:
         )
         app.login(auth_params=_make_auth_params(service_name), force=True)
     else:
-        build_user_app().login(force=True)
+        build_user_app(transfer_collection_id).login(force=True)
 
 
 def get_authorizer(resource_server: str) -> GlobusAuthorizer:

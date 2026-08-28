@@ -47,6 +47,16 @@ def login(
             f"Valid values: {', '.join(sorted(SERVICES))}."
         ),
     ),
+    authorize_transfers: str | None = typer.Option(
+        None,
+        "--authorize-transfers",
+        help=(
+            "A Globus collection UUID to authorize transfers against. "
+            "When provided, login will request scopes for Globus Transfer "
+            "including the given collection. Append :data_access to the UUID "
+            "to request the data_access dependency if needed."
+        ),
+    ),
 ) -> None:
     """
     Log in with Globus. By default, triggers a single authentication flow that
@@ -57,7 +67,7 @@ def login(
         valid = ", ".join(sorted(SERVICES))
         typer.echo(f"Unknown service '{service}'. Valid values: {valid}", err=True)
         raise typer.Exit(code=1)
-    auth_login(service)
+    auth_login(service, authorize_transfers)
 
 
 @cli.command()

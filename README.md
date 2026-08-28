@@ -6,6 +6,7 @@ Centralized ALCF CLI tool to generate and retrieve Globus access tokens for the 
 | [ALCF Inference Service](https://docs.alcf.anl.gov/services/inference-endpoints/) | `inference` |
 | [ALCF IRI API](https://docs.alcf.anl.gov/services/iri-api/) | `iri` |
 | [Globus Compute](https://www.globus.org/compute) | `globus-compute` |
+| [Globus Transfer](https://www.globus.org/data-transfer) | `globus-transfer` |
 
 ## 1. Prerequisites
 
@@ -76,6 +77,17 @@ Re-authenticate for a specific service only:
 ```bash
 alcf-tokens login <service-name>
 ```
+
+To also authorize Globus Transfer against one of your own collections, pass its UUID with `--authorize-transfers`:
+```bash
+alcf-tokens login --authorize-transfers <collection-uuid>
+```
+
+If the collection is a Globus Connect Server (GCS) mapped collection that requires a `data_access` scope, append `:data_access` to the UUID:
+```bash
+alcf-tokens login --authorize-transfers <collection-uuid>:data_access
+```
+
 
 ### Retrieve a token
 
