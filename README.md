@@ -127,3 +127,20 @@ alcf-tokens list-services
 ```bash
 alcf-tokens clear-tokens
 ```
+
+## 4. Standalone shell script (no dependencies)
+
+`alcf-tokens.sh` is a dependency-free alternative to the Python CLI. It is
+written in POSIX `sh` and needs only `curl`, `jq`, `awk`, and `openssl`. It
+supports the same services (`inference`, `iri`, `globus-compute`) and mirrors
+the Python CLI argument format: `<action> [<service>]`, with the service passed
+positionally and no options.
+
+```bash
+./alcf-tokens.sh list-services                  # list available services
+./alcf-tokens.sh login                          # authenticate for all services
+./alcf-tokens.sh login iri                      # authenticate for one service only
+./alcf-tokens.sh get-token inference
+./alcf-tokens.sh test-token inference
+./alcf-tokens.sh clear-tokens
+```
