@@ -25,6 +25,22 @@ def main(log_level: str = "WARNING") -> None:
 
 
 @auth_cli.command()
+def list_services() -> None:
+    """
+    List all available services.
+    """
+    result = [
+        {
+            "service_name": name,
+            "description": svc.description,
+            "documentation_url": svc.documentation_url,
+        }
+        for name, svc in sorted(SERVICES.items())
+    ]
+    typer.echo(json.dumps(result, indent=2))
+
+
+@auth_cli.command()
 def login(
     service: str | None = typer.Argument(
         None,

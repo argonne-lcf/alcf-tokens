@@ -91,6 +91,12 @@ alcf-client auth test-token <service-name>
 
 Output: `{"ready": true, "error": null}` on success.
 
+### List available services
+
+```bash
+alcf-client auth list-services
+```
+
 ### Clear stored tokens
 
 ```bash
