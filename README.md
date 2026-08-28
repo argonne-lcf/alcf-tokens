@@ -20,23 +20,23 @@ python -m venv .venv
 source .venv/bin/activate
 pip install .
 ```
-If you do not see `alcf-client`, try to deactivate and reactivate your environment.
+If you do not see `alcf-tokens`, try to deactivate and reactivate your environment.
 
 ### Conda
 
 ```bash
-conda create -n alcf-client python=3.12 -y
-conda activate alcf-client
+conda create -n alcf-tokens python=3.12 -y
+conda activate alcf-tokens
 pip install .
 ```
 
 ### Uv
 
-We recommend using `alcf-client` as a standalone tool with [uv](https://docs.astral.sh/uv/getting-started/installation/), which sidesteps the need to manually create a virtual environment.
+We recommend using `alcf-tokens` as a standalone tool with [uv](https://docs.astral.sh/uv/getting-started/installation/), which sidesteps the need to manually create a virtual environment.
 
 ```bash
 uv tool install git+https://github.com/argonne-lcf/alcf-client
-alcf-client auth --help
+alcf-tokens --help
 
 # To uninstall the tool:
 uv tool uninstall alcf-client
@@ -45,7 +45,7 @@ uv tool uninstall alcf-client
 To invoke the tool as a one-liner without a persistent tool installation, we recommend `uvx`:
 
 ```bash
-uvx git+https://github.com/argonne-lcf/alcf-client auth --help
+uvx git+https://github.com/argonne-lcf/alcf-client --help
 ```
 
 To install the tool into a virtual environment that you manage yourself: 
@@ -60,33 +60,33 @@ uv pip install git+https://github.com/argonne-lcf/alcf-client
 
 ### Test installation
 
-Once installed, you should be able to access the `alcf-client` from your active environment:
+Once installed, you should be able to access `alcf-tokens` from your active environment:
 ```bash
-alcf-client --help
+alcf-tokens --help
 ```
 
 ### Authentication
 
 Log in once to obtain tokens for all services:
 ```bash
-alcf-client auth login
+alcf-tokens login
 ```
 
 Re-authenticate for a specific service only:
 ```bash
-alcf-client auth login <service-name>
+alcf-tokens login <service-name>
 ```
 
 ### Retrieve a token
 
 ```bash
-alcf-client auth get-token <service-name>
+alcf-tokens get-token <service-name>
 ```
 
 ### Test a token
 
 ```bash
-alcf-client auth test-token <service-name>
+alcf-tokens test-token <service-name>
 ```
 
 Output: `{"ready": true, "error": null}` on success.
@@ -94,11 +94,11 @@ Output: `{"ready": true, "error": null}` on success.
 ### List available services
 
 ```bash
-alcf-client auth list-services
+alcf-tokens list-services
 ```
 
 ### Clear stored tokens
 
 ```bash
-alcf-client auth clear-tokens
+alcf-tokens clear-tokens
 ```

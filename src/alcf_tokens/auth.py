@@ -15,7 +15,7 @@ class AuthError(Exception):
 
 
 # Globus UserApp name
-APP_NAME = "alcf_client"
+APP_NAME = "alcf_tokens"
 
 # Public native app client registered with Globus
 AUTH_CLIENT_ID = "7f3e61f5-e0de-4e8f-9150-0a62c65dda63"
@@ -121,7 +121,7 @@ def get_access_token(name: str) -> str:
     if not TOKENS_PATH.is_file():
         raise AuthError(
             "No tokens found. "
-            f'Please authenticate first by running "{sys.argv[0]} auth login".'
+            f'Please authenticate first by running "{sys.argv[0]} login".'
         )
 
     resource_server = SERVICES[name].resource_server

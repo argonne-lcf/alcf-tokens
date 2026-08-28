@@ -9,14 +9,12 @@ from .auth import AuthError, get_access_token, login as auth_login, SCOPE_RESOUR
 logger = logging.getLogger(__name__)
 
 cli = typer.Typer(no_args_is_help=True, add_completion=False)
-auth_cli = typer.Typer(no_args_is_help=True, add_completion=False)
-cli.add_typer(auth_cli, name="auth", help="Login and manage access tokens")
 
 
 @cli.callback()
 def main(log_level: str = "WARNING") -> None:
     """
-    ALCF client to interface with various ALCF services.
+    ALCF tokens CLI to generate and retrieve Globus access tokens.
     """
     logging.basicConfig(
         level=log_level,
@@ -24,7 +22,7 @@ def main(log_level: str = "WARNING") -> None:
     )
 
 
-@auth_cli.command()
+@cli.command()
 def list_services() -> None:
     """
     List all available services.
@@ -40,7 +38,7 @@ def list_services() -> None:
     typer.echo(json.dumps(result, indent=2))
 
 
-@auth_cli.command()
+@cli.command()
 def login(
     service: str | None = typer.Argument(
         None,
@@ -62,7 +60,7 @@ def login(
     auth_login(service)
 
 
-@auth_cli.command()
+@cli.command()
 def get_token(
     service: str = typer.Argument(
         ...,
@@ -76,11 +74,11 @@ def get_token(
     Print an access token for the given service.
 
     Automatically uses locally cached tokens, refreshing when necessary.
-    If no token is stored or the refresh token has expired, re-run 'auth login'.
+    If no token is stored or the refresh token has expired, re-run 'login'.
 
     Examples:
-        alcf-client auth get-token inference
-        alcf-client auth get-token iri
+        alcf-tokens get-token inference
+        alcf-tokens get-token iri
     """
     try:
         token = get_access_token(service)
@@ -98,7 +96,7 @@ _TEST_ENDPOINTS: dict[str, tuple[str, int] | None] = {
 }
 
 
-@auth_cli.command()
+@cli.command()
 def test_token(
     service: str = typer.Argument(
         ...,
@@ -112,8 +110,8 @@ def test_token(
     Test whether the stored token for a service is accepted.
 
     Examples:
-        alcf-client auth test-token inference
-        alcf-client auth test-token iri
+        alcf-tokens test-token inference
+        alcf-tokens test-token iri
     """
     if service not in SCOPE_RESOURCE_SERVERS:
         valid = ", ".join(sorted(SCOPE_RESOURCE_SERVERS))
@@ -141,7 +139,7 @@ def test_token(
         raise typer.Exit(code=1)
 
 
-@auth_cli.command()
+@cli.command()
 def clear_tokens() -> None:
     """
     Remove locally stored tokens.
