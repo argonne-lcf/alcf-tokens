@@ -28,6 +28,10 @@ TOKENS_PATH = Path.home() / f".globus/app/{AUTH_CLIENT_ID}/{APP_NAME}/tokens.jso
 # Globus Transfer resource server
 TRANSFER_RESOURCE_SERVER = TransferScopes.resource_server
 
+COLLECTION_ALIASES: dict[str, str] = {
+    "eagle": "05d2c76a-e867-4f67-aa57-76edeb0beda0:data_access",
+}
+
 
 @dataclass
 class ServiceConfig:
@@ -80,6 +84,12 @@ class DomainBasedErrorHandler:
         app.login()
 
 
+def _resolve_collection(transfer_collection_id: str | None) -> str | None:
+    if transfer_collection_id is None:
+        return None
+    return COLLECTION_ALIASES.get(transfer_collection_id, transfer_collection_id)
+
+
 def _build_scope_requirements(
     transfer_collection_id: str | None = None,
 ) -> dict[str, Any]:
@@ -102,6 +112,7 @@ def _build_scope_requirements(
 
 
 def build_user_app(transfer_collection_id: str | None = None) -> globus_sdk.UserApp:
+    transfer_collection_id = _resolve_collection(transfer_collection_id)
     return globus_sdk.UserApp(
         APP_NAME,
         client_id=AUTH_CLIENT_ID,

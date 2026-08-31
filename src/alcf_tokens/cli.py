@@ -4,7 +4,7 @@ import logging
 import httpx
 import typer
 
-from .auth import AuthError, get_access_token, login as auth_login, SCOPE_RESOURCE_SERVERS, SERVICES, TOKENS_PATH
+from .auth import AuthError, COLLECTION_ALIASES, get_access_token, login as auth_login, SCOPE_RESOURCE_SERVERS, SERVICES, TOKENS_PATH
 
 logger = logging.getLogger(__name__)
 
@@ -51,10 +51,11 @@ def login(
         None,
         "--authorize-transfers",
         help=(
-            "A Globus collection UUID to authorize transfers against. "
+            "A Globus collection UUID (or alias) to authorize transfers against. "
             "When provided, login will request scopes for Globus Transfer "
             "including the given collection. Append :data_access to the UUID "
-            "to request the data_access dependency if needed."
+            "to request the data_access dependency if needed. "
+            f"Known aliases: {', '.join(sorted(COLLECTION_ALIASES))}."
         ),
     ),
 ) -> None:

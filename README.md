@@ -78,6 +78,8 @@ Re-authenticate for a specific service only:
 alcf-tokens login <service-name>
 ```
 
+### Globus Transfer token
+
 To also authorize Globus Transfer against one of your own collections, pass its UUID with `--authorize-transfers`:
 ```bash
 alcf-tokens login --authorize-transfers <collection-uuid>
@@ -86,6 +88,14 @@ alcf-tokens login --authorize-transfers <collection-uuid>
 If the collection is a Globus Connect Server (GCS) mapped collection that requires a `data_access` scope, append `:data_access` to the UUID:
 ```bash
 alcf-tokens login --authorize-transfers <collection-uuid>:data_access
+```
+
+The following collection aliases are supported for convenience:
+
+- `eagle`
+
+```bash
+alcf-tokens login --authorize-transfers eagle
 ```
 
 
