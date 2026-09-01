@@ -4,7 +4,8 @@ import logging
 import httpx
 import typer
 
-from .auth import AuthError, COLLECTION_ALIASES, get_access_token, login as auth_login, SCOPE_RESOURCE_SERVERS, SERVICES, TOKENS_PATH
+from .auth import AuthError, get_access_token, login as auth_login
+from .config import COLLECTION_ALIASES, SCOPE_RESOURCE_SERVERS, SERVICES, TEST_ENDPOINTS, TOKENS_PATH
 
 logger = logging.getLogger(__name__)
 
@@ -98,13 +99,6 @@ def get_token(
     print(token)
 
 
-_TEST_ENDPOINTS: dict[str, tuple[str, int] | None] = {
-    "inference": ("https://inference-api.alcf.anl.gov/resource_server/whoami", 200),
-    "iri": ("https://api.alcf.anl.gov/api/v1/task/not-a-real-task", 404),
-    "globus-compute": None,
-}
-
-
 @cli.command()
 def test_token(
     service: str = typer.Argument(
@@ -127,7 +121,7 @@ def test_token(
         typer.echo(json.dumps({"ready": False, "error": f"Unknown service '{service}'. Valid values: {valid}"}))
         raise typer.Exit(code=1)
 
-    test_config = _TEST_ENDPOINTS.get(service)
+    test_config = TEST_ENDPOINTS.get(service)
     if test_config is None:
         typer.echo(f"test-token is not yet implemented for '{service}'", err=True)
         raise typer.Exit(code=0)
