@@ -80,22 +80,25 @@ alcf-tokens login <service-name>
 
 ### Globus Transfer token
 
-To also authorize Globus Transfer against one of your own collections, pass its UUID with `--authorize-transfers`:
+To also authorize Globus Transfer against one of your own collections, pass its UUID with `--authorize-transfer`. Repeat the flag to authorize multiple collections:
 ```bash
-alcf-tokens login --authorize-transfers <collection-uuid>
+alcf-tokens login --authorize-transfer <collection-uuid>
+alcf-tokens login --authorize-transfer <uuid-1> --authorize-transfer <uuid-2>
 ```
 
 If the collection is a Globus Connect Server (GCS) mapped collection that requires a `data_access` scope, append `:data_access` to the UUID:
 ```bash
-alcf-tokens login --authorize-transfers <collection-uuid>:data_access
+alcf-tokens login --authorize-transfer <collection-uuid>:data_access
 ```
 
 The following collection aliases are supported for convenience:
 
-- `eagle`
+| Alias | Collection |
+|---|---|
+| `eagle` | `05d2c76a-e867-4f67-aa57-76edeb0beda0` (ALCF Eagle, with `data_access`) |
 
 ```bash
-alcf-tokens login --authorize-transfers eagle
+alcf-tokens login --authorize-transfer eagle
 ```
 
 

@@ -84,39 +84,43 @@ class DomainBasedErrorHandler:
         app.login()
 
 
-def _resolve_collection(transfer_collection_id: str | None) -> str | None:
-    if transfer_collection_id is None:
-        return None
+def _resolve_collection(transfer_collection_id: str) -> str:
     return COLLECTION_ALIASES.get(transfer_collection_id, transfer_collection_id)
 
 
 def _build_scope_requirements(
-    transfer_collection_id: str | None = None,
+    service_name: str | None = None,
+    authorize_transfer: list[str] | None = None,
 ) -> dict[str, Any]:
-    base: dict[str, Any] = {
-        svc.resource_server: [svc.scope] for svc in SERVICES.values()
-    }
+    if service_name is not None:
+        svc = SERVICES[service_name]
+        base: dict[str, Any] = {svc.resource_server: [svc.scope]}
+    else:
+        base = {svc.resource_server: [svc.scope] for svc in SERVICES.values()}
 
-    if transfer_collection_id is not None:
+    if authorize_transfer:
         transfer_scope = TransferScopes.make_mutable("all")
-        collection_id, *gcs_scopes = transfer_collection_id.split(":")
-        if "data_access" in gcs_scopes:
-            data_access = GCSCollectionScopeBuilder(collection_id).make_mutable(
-                "data_access", optional=True
-            )
-            transfer_scope.add_dependency(data_access)
-            base[collection_id] = [data_access]
+        for raw in authorize_transfer:
+            collection_id, *gcs_scopes = _resolve_collection(raw).split(":")
+            if "data_access" in gcs_scopes:
+                data_access = GCSCollectionScopeBuilder(collection_id).make_mutable(
+                    "data_access", optional=True
+                )
+                transfer_scope.add_dependency(data_access)
+                base[collection_id] = [data_access]
         base[TRANSFER_RESOURCE_SERVER] = [transfer_scope]
 
     return base
 
 
-def build_user_app(transfer_collection_id: str | None = None) -> globus_sdk.UserApp:
-    transfer_collection_id = _resolve_collection(transfer_collection_id)
+def build_user_app(
+    service_name: str | None = None,
+    authorize_transfer: list[str] | None = None,
+) -> globus_sdk.UserApp:
     return globus_sdk.UserApp(
         APP_NAME,
         client_id=AUTH_CLIENT_ID,
-        scope_requirements=_build_scope_requirements(transfer_collection_id),
+        scope_requirements=_build_scope_requirements(service_name, authorize_transfer),
         config=globus_sdk.GlobusAppConfig(
             request_refresh_tokens=True,
             token_validation_error_handler=DomainBasedErrorHandler(),
@@ -136,25 +140,15 @@ def _make_auth_params(service_name: str | None) -> globus_sdk.gare.GlobusAuthori
 
 def login(
     service_name: str | None = None,
-    transfer_collection_id: str | None = None,
+    authorize_transfer: list[str] | None = None,
 ) -> None:
-    if service_name == "globus-transfer":
-        build_user_app(transfer_collection_id).login(force=True)
-    elif service_name is not None:
-        svc = SERVICES[service_name]
-        app = globus_sdk.UserApp(
-            APP_NAME,
-            client_id=AUTH_CLIENT_ID,
-            scope_requirements={svc.resource_server: [svc.scope]},
-            config=globus_sdk.GlobusAppConfig(request_refresh_tokens=True),
-        )
-        app.login(auth_params=_make_auth_params(service_name), force=True)
-    else:
-        build_user_app(transfer_collection_id).login(force=True)
+    build_user_app(service_name, authorize_transfer).login(
+        auth_params=_make_auth_params(service_name), force=True
+    )
 
 
 def get_authorizer(resource_server: str) -> GlobusAuthorizer:
-    app = build_user_app()
+    app = build_user_app(service_name=None)
     return app.get_authorizer(resource_server)
 
 
@@ -166,10 +160,10 @@ def get_access_token(name: str) -> str:
     if not TOKENS_PATH.is_file():
         raise AuthError(
             "No tokens found. "
-            f'Please authenticate first by running "{sys.argv[0]} login".'
+            f'Please authenticate first by running "alcf-tokens login".'
         )
 
     resource_server = SERVICES[name].resource_server
     auth = get_authorizer(resource_server)
-    auth.ensure_valid_token()  # type: ignore[attr-defined]
-    return auth.access_token  # type: ignore[attr-defined]
+    auth.ensure_valid_token()
+    return auth.access_token
