@@ -95,7 +95,9 @@ The following collection aliases are supported for convenience:
 
 | Alias | Collection |
 |---|---|
+| `home` | `9032dd3a-e841-4687-a163-2720da731b5b` (ALCF Home, with `data_access`) |
 | `eagle` | `05d2c76a-e867-4f67-aa57-76edeb0beda0` (ALCF Eagle, with `data_access`) |
+| `flare` | `f39a7a0f-5bfc-46ce-9615-ba9f8592814f` (ALCF Flare, with `data_access`) |
 
 ```bash
 alcf-tokens login --authorize-transfer eagle
