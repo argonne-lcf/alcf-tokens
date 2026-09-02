@@ -1,5 +1,3 @@
-import logging
-import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -7,9 +5,8 @@ from typing import Any
 import globus_sdk
 import globus_sdk.gare
 from globus_sdk.authorizers import GlobusAuthorizer
-from globus_sdk.scopes import GCSCollectionScopes, TransferScopes
 
-logger = logging.getLogger(__name__)
+from .globus_transfer_utils import add_transfer_scope, TRANSFER_RESOURCE_SERVER, TRANSFER_SCOPE_ALL
 
 
 class AuthError(Exception):
@@ -24,13 +21,6 @@ AUTH_CLIENT_ID = "7f3e61f5-e0de-4e8f-9150-0a62c65dda63"
 
 # Path to tokens.json file where all the tokens are stored
 TOKENS_PATH = Path.home() / f".globus/app/{AUTH_CLIENT_ID}/{APP_NAME}/tokens.json"
-
-# Globus Transfer resource server
-TRANSFER_RESOURCE_SERVER = TransferScopes.resource_server
-
-COLLECTION_ALIASES: dict[str, str] = {
-    "eagle": "05d2c76a-e867-4f67-aa57-76edeb0beda0:data_access",
-}
 
 
 @dataclass
@@ -66,7 +56,7 @@ SERVICES: dict[str, ServiceConfig] = {
     ),
     "globus-transfer": ServiceConfig(
         resource_server=TRANSFER_RESOURCE_SERVER,
-        scope=TransferScopes.all,
+        scope=TRANSFER_SCOPE_ALL,
         session_policy=None,
         description="Globus Transfer",
         documentation_url="https://www.globus.org/data-transfer",
@@ -80,12 +70,7 @@ SCOPE_RESOURCE_SERVERS: dict[str, str] = {
 
 class DomainBasedErrorHandler:
     def __call__(self, app: globus_sdk.GlobusApp, error: Exception) -> None:
-        logger.error(f"Encountered error '{error}', initiating login...")
         app.login()
-
-
-def _resolve_collection(transfer_collection_id: str) -> str:
-    return COLLECTION_ALIASES.get(transfer_collection_id, transfer_collection_id)
 
 
 def _build_scope_requirements(
@@ -99,14 +84,7 @@ def _build_scope_requirements(
         base = {svc.resource_server: [svc.scope] for svc in SERVICES.values()}
 
     if authorize_transfer:
-        transfer_scope = TransferScopes.all
-        for raw in authorize_transfer:
-            collection_id, *gcs_scopes = _resolve_collection(raw).split(":")
-            if "data_access" in gcs_scopes:
-                data_access = GCSCollectionScopes(collection_id).data_access.with_optional(True)
-                transfer_scope = transfer_scope.with_dependency(data_access)
-                base[collection_id] = [data_access]
-        base[TRANSFER_RESOURCE_SERVER] = [transfer_scope]
+        base = add_transfer_scope(base, authorize_transfer=authorize_transfer)
 
     return base
 
