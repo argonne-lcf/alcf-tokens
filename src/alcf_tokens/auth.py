@@ -7,7 +7,7 @@ from typing import Any
 import globus_sdk
 import globus_sdk.gare
 from globus_sdk.authorizers import GlobusAuthorizer
-from globus_sdk.scopes import GCSCollectionScopeBuilder, TransferScopes
+from globus_sdk.scopes import GCSCollectionScopes, TransferScopes
 
 logger = logging.getLogger(__name__)
 
@@ -99,14 +99,12 @@ def _build_scope_requirements(
         base = {svc.resource_server: [svc.scope] for svc in SERVICES.values()}
 
     if authorize_transfer:
-        transfer_scope = TransferScopes.make_mutable("all")
+        transfer_scope = TransferScopes.all
         for raw in authorize_transfer:
             collection_id, *gcs_scopes = _resolve_collection(raw).split(":")
             if "data_access" in gcs_scopes:
-                data_access = GCSCollectionScopeBuilder(collection_id).make_mutable(
-                    "data_access", optional=True
-                )
-                transfer_scope.add_dependency(data_access)
+                data_access = GCSCollectionScopes(collection_id).data_access.with_optional(True)
+                transfer_scope = transfer_scope.with_dependency(data_access)
                 base[collection_id] = [data_access]
         base[TRANSFER_RESOURCE_SERVER] = [transfer_scope]
 
