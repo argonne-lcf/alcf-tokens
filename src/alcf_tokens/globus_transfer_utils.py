@@ -8,7 +8,7 @@ TRANSFER_SCOPE_ALL = TransferScopes.all
 
 COLLECTION_ALIASES: dict[str, str] = {
     "eagle": "05d2c76a-e867-4f67-aa57-76edeb0beda0:data_access",
-    "flare": "f39a7a0f-5bfc-46ce-9615-ba9f8592814f",
+    "flare": "f39a7a0f-5bfc-46ce-9615-ba9f8592814f:data_access",
     "home": "9032dd3a-e841-4687-a163-2720da731b5b",
 }
 
