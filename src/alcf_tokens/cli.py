@@ -4,7 +4,8 @@ import logging
 import httpx
 import typer
 
-from .auth import AuthError, COLLECTION_ALIASES, get_access_token, login as auth_login, SCOPE_RESOURCE_SERVERS, SERVICES, TOKENS_PATH
+from .auth import AuthError, get_access_token, login as auth_login, SCOPE_RESOURCE_SERVERS, SERVICES, TOKENS_PATH
+from .globus_transfer_utils import COLLECTION_ALIASES
 
 logger = logging.getLogger(__name__)
 
