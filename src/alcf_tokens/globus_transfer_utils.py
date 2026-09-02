@@ -18,8 +18,6 @@ if sdk_is_above_4_0_0:
 else:
     from globus_sdk.scopes import GCSCollectionScopeBuilder, TransferScopes
 
-print("IS ABOVE 4?", sdk_is_above_4_0_0)
-
 
 def _resolve_collection(transfer_collection_id: str) -> str:
     return COLLECTION_ALIASES.get(transfer_collection_id, transfer_collection_id)
