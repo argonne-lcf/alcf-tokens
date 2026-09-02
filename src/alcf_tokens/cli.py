@@ -4,7 +4,7 @@ import logging
 import httpx
 import typer
 
-from .auth import AuthError, get_access_token, login as auth_login, SCOPE_RESOURCE_SERVERS, SERVICES, TOKENS_PATH
+from .auth import AuthError, COLLECTION_ALIASES, get_access_token, login as auth_login, SCOPE_RESOURCE_SERVERS, SERVICES, TOKENS_PATH
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +47,15 @@ def login(
             f"Valid values: {', '.join(sorted(SERVICES))}."
         ),
     ),
+    authorize_transfer: list[str] = typer.Option(
+        default=[],
+        help=(
+            "A Globus collection UUID (or alias) to authorize transfer against. "
+            "Repeat the flag to authorize multiple collections. "
+            "Append :data_access to a UUID to request the data_access dependency if needed. "
+            f"Known aliases: {', '.join(sorted(COLLECTION_ALIASES))}."
+        ),
+    ),
 ) -> None:
     """
     Log in with Globus. By default, triggers a single authentication flow that
@@ -57,7 +66,7 @@ def login(
         valid = ", ".join(sorted(SERVICES))
         typer.echo(f"Unknown service '{service}'. Valid values: {valid}", err=True)
         raise typer.Exit(code=1)
-    auth_login(service)
+    auth_login(service, authorize_transfer or None)
 
 
 @cli.command()
