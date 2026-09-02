@@ -1,4 +1,4 @@
-# ALCF Client
+# ALCF Tokens
 Centralized ALCF CLI tool to generate and retrieve Globus access tokens for the following services:
 
 | Service | service-name |
@@ -36,17 +36,17 @@ pip install .
 We recommend using `alcf-tokens` as a standalone tool with [uv](https://docs.astral.sh/uv/getting-started/installation/), which sidesteps the need to manually create a virtual environment.
 
 ```bash
-uv tool install git+https://github.com/argonne-lcf/alcf-client
+uv tool install git+https://github.com/argonne-lcf/alcf-tokens
 alcf-tokens --help
 
 # To uninstall the tool:
-uv tool uninstall alcf-client
+uv tool uninstall alcf-tokens
 ```
 
 To invoke the tool as a one-liner without a persistent tool installation, we recommend `uvx`:
 
 ```bash
-uvx git+https://github.com/argonne-lcf/alcf-client --help
+uvx git+https://github.com/argonne-lcf/alcf-tokens --help
 ```
 
 To install the tool into a virtual environment that you manage yourself: 
@@ -54,7 +54,7 @@ To install the tool into a virtual environment that you manage yourself:
 ```bash
 uv venv .venv
 source .venv/bin/activate
-uv pip install git+https://github.com/argonne-lcf/alcf-client
+uv pip install git+https://github.com/argonne-lcf/alcf-tokens
 ```
 
 ## 3. Usage
