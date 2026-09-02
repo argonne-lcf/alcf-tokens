@@ -128,7 +128,45 @@ alcf-tokens list-services
 alcf-tokens clear-tokens
 ```
 
-## 4. Standalone shell script (no dependencies)
+## 4. Incorporating your tokens in services
+
+### Globus Compute
+
+```python
+from globus_sdk import AccessTokenAuthorizer
+from globus_compute_sdk import Client
+
+COMPUTE_TOKEN = "<your-globus-compute-token>"
+
+auth = AccessTokenAuthorizer(COMPUTE_TOKEN)
+gcc = Client(authorizer=auth)
+```
+
+See [ALCF docs](https://docs.alcf.anl.gov/services/globus-compute/) for more details.
+
+### Globus Transfer
+
+```python
+from globus_sdk import AccessTokenAuthorizer, TransferClient
+
+TRANSFER_TOKEN = "<your-globus-transfer-token>"
+
+auth = AccessTokenAuthorizer(TRANSFER_TOKEN)
+tc = TransferClient(authorizer=auth)
+```
+
+See [Globus docs](https://globus-sdk-python.readthedocs.io/en/stable/services/transfer.html) for more details.
+
+### ALCF Inference Service
+
+Use `alcf-tokens get-token inference` to print your token, and incorporate it into your request headers. See [ALCF docs](https://docs.alcf.anl.gov/services/inference-endpoints/) for more details.
+
+### ALCF IRI API
+
+Use `alcf-tokens get-token iri` to print your token, and incorporate it into your request headers. See [ALCF docs](https://docs.alcf.anl.gov/services/iri-api/) for more details.
+
+
+## 5. Standalone shell script (no dependencies)
 
 `alcf-tokens.sh` is a dependency-free alternative to the Python CLI. It is
 written in POSIX `sh` and needs only `curl`, `jq`, `awk`, and `openssl`. It
