@@ -12,50 +12,35 @@ Centralized ALCF CLI tool to generate and retrieve Globus access tokens for the 
 
 - Python >= 3.10
 
-## 2. Installation
+## 2. Installation Options
 
-### Pip
-
+### Python environment
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install .
+pip install alcf-tokens
 ```
-If you do not see `alcf-tokens`, try to deactivate and reactivate your environment.
 
-### Conda
-
+### Conda environment
 ```bash
 conda create -n alcf-tokens python=3.12 -y
 conda activate alcf-tokens
-pip install .
+pip install alcf-tokens
 ```
 
 ### Uv
-
-We recommend using `alcf-tokens` as a standalone tool with [uv](https://docs.astral.sh/uv/getting-started/installation/), which sidesteps the need to manually create a virtual environment.
-
-```bash
-uv tool install git+https://github.com/argonne-lcf/alcf-tokens
-alcf-tokens --help
-
-# To uninstall the tool:
-uv tool uninstall alcf-tokens
-```
-
-To invoke the tool as a one-liner without a persistent tool installation, we recommend `uvx`:
-
-```bash
-uvx git+https://github.com/argonne-lcf/alcf-tokens --help
-```
-
-To install the tool into a virtual environment that you manage yourself: 
-
 ```bash
 uv venv .venv
 source .venv/bin/activate
-uv pip install git+https://github.com/argonne-lcf/alcf-tokens
+uv pip install alcf-tokens
 ```
+
+To invoke the tool as a one-liner without the need to manually create a virtual environment, we recommend `uvx`:
+
+```bash
+uvx alcf-tokens --help
+```
+
 
 ## 3. Usage
 
