@@ -4,7 +4,7 @@ import logging
 import httpx
 import typer
 
-from .auth import AuthError, get_access_token, login as auth_login, SCOPE_RESOURCE_SERVERS, SERVICES, TOKENS_PATH
+from .auth import AuthError, clear_tokens as auth_clear_tokens, get_access_token, login as auth_login, SCOPE_RESOURCE_SERVERS, SERVICES
 from .globus_transfer_utils import COLLECTION_ALIASES
 
 logger = logging.getLogger(__name__)
@@ -154,8 +154,7 @@ def clear_tokens() -> None:
     """
     Remove locally stored tokens.
     """
-    if TOKENS_PATH.is_file():
-        TOKENS_PATH.unlink()
+    if auth_clear_tokens():
         typer.echo("Tokens removed.")
     else:
         typer.echo("No tokens found.")
