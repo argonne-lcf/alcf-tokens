@@ -4,9 +4,13 @@ from typing import Any
 import globus_sdk
 import globus_sdk.gare
 from globus_sdk.authorizers import GlobusAuthorizer
-from globus_sdk.tokenstorage import TokenValidationError
 
-from .globus_transfer_utils import add_transfer_scope, TRANSFER_RESOURCE_SERVER, TRANSFER_SCOPE_ALL
+from .globus_transfer_utils import add_transfer_scope, sdk_is_above_4_0_0, TRANSFER_RESOURCE_SERVER, TRANSFER_SCOPE_ALL
+
+if sdk_is_above_4_0_0:
+    from globus_sdk.token_storage import TokenValidationError
+else:
+    from globus_sdk.tokenstorage import TokenValidationError
 
 
 class AuthError(Exception):
