@@ -53,7 +53,8 @@ def login(
         help=(
             "A Globus collection UUID (or alias) to authorize transfer against. "
             "Repeat the flag to authorize multiple collections. "
-            "Append :data_access to a UUID to request the data_access dependency if needed. "
+            "Append :data_access to a UUID to request the data_access dependency if needed, "
+            "and/or :https to authorize direct HTTPS uploads and downloads on the collection. "
             f"Known aliases: {', '.join(sorted(COLLECTION_ALIASES))}."
         ),
     ),
