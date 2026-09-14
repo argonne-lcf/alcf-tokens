@@ -1,0 +1,35 @@
+name: Publish alcf-tokens to PyPI
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: releases
+      url: https://pypi.org/project/alcf-tokens/
+    permissions:
+      id-token: write
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: "pyproject.toml"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - name: Build package
+        run: uv build
+      - name: Publish to PyPI
+        # uv automatically detects OIDC when id-token: write is present
+        # and handles OIDC token exchange between GitHub and PyPI:
+        run: uv publish
