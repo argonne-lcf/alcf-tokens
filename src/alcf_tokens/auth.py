@@ -1,12 +1,16 @@
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any
 
 import globus_sdk
 import globus_sdk.gare
 from globus_sdk.authorizers import GlobusAuthorizer
 
-from .globus_transfer_utils import add_transfer_scope, TRANSFER_RESOURCE_SERVER, TRANSFER_SCOPE_ALL
+from .globus_transfer_utils import add_transfer_scope, sdk_is_above_4_0_0, TRANSFER_RESOURCE_SERVER, TRANSFER_SCOPE_ALL
+
+if sdk_is_above_4_0_0:
+    from globus_sdk.token_storage import TokenValidationError
+else:
+    from globus_sdk.tokenstorage import TokenValidationError
 
 
 class AuthError(Exception):
@@ -18,9 +22,6 @@ APP_NAME = "alcf_tokens"
 
 # Public native app client registered with Globus
 AUTH_CLIENT_ID = "7f3e61f5-e0de-4e8f-9150-0a62c65dda63"
-
-# Path to tokens.json file where all the tokens are stored
-TOKENS_PATH = Path.home() / f".globus/app/{AUTH_CLIENT_ID}/{APP_NAME}/tokens.json"
 
 
 @dataclass
@@ -68,11 +69,6 @@ SCOPE_RESOURCE_SERVERS: dict[str, str] = {
 }
 
 
-class DomainBasedErrorHandler:
-    def __call__(self, app: globus_sdk.GlobusApp, error: Exception) -> None:
-        app.login()
-
-
 def _build_scope_requirements(
     service_name: str | None = None,
     authorize_transfer: list[str] | None = None,
@@ -99,7 +95,9 @@ def build_user_app(
         scope_requirements=_build_scope_requirements(service_name, authorize_transfer),
         config=globus_sdk.GlobusAppConfig(
             request_refresh_tokens=True,
-            token_validation_error_handler=DomainBasedErrorHandler(),
+            # Raise on missing/invalid tokens instead of starting an interactive
+            # login; get_access_token turns these errors into AuthError.
+            token_validation_error_handler=None,
         ),
     )
 
@@ -133,13 +131,26 @@ def get_access_token(name: str) -> str:
         valid = ", ".join(sorted(SERVICES))
         raise AuthError(f"Unknown token name '{name}'. Valid names: {valid}")
 
-    if not TOKENS_PATH.is_file():
-        raise AuthError(
-            "No tokens found. "
-            f'Please authenticate first by running "alcf-tokens login".'
-        )
-
     resource_server = SERVICES[name].resource_server
-    auth = get_authorizer(resource_server)
-    auth.ensure_valid_token()
+    try:
+        auth = get_authorizer(resource_server)
+        auth.ensure_valid_token()
+    except TokenValidationError as exc:
+        raise AuthError(
+            f"No valid tokens found for '{name}' ({exc}). "
+            'Please authenticate by running "alcf-tokens login".'
+        ) from exc
     return auth.access_token
+
+
+def clear_tokens() -> bool:
+    """
+    Remove all locally stored tokens (without revoking them).
+    Returns True if any tokens were removed.
+    """
+    # Use the raw storage, skipping scope validation, so stale tokens can be cleared
+    storage = build_user_app().token_storage.token_storage
+    resource_servers = list(storage.get_token_data_by_resource_server())
+    for resource_server in resource_servers:
+        storage.remove_token_data(resource_server)
+    return bool(resource_servers)
