@@ -63,17 +63,39 @@ Re-authenticate for a specific service only:
 alcf-tokens login <service-name>
 ```
 
-### Globus Transfer token
+### Authorizing collections
 
-To also authorize Globus Transfer against one of your own collections, pass its UUID with `--authorize-transfer`. Repeat the flag to authorize multiple collections:
+To work with data on a Globus collection, name the collection at login with
+`--authorize-transfer`. Repeat the flag to authorize several collections in a
+single login:
 ```bash
 alcf-tokens login --authorize-transfer <collection-uuid>
 alcf-tokens login --authorize-transfer <uuid-1> --authorize-transfer <uuid-2>
 ```
 
-If the collection is a Globus Connect Server (GCS) mapped collection that requires a `data_access` scope, append `:data_access` to the UUID:
+Each entry is a collection UUID (or alias) followed by the scopes you need on
+that collection. Both scopes are optional, and may be combined in either order:
+
+| Suffix | When you need it |
+|---|---|
+| `:data_access` | The collection is a Globus Connect Server (GCS) *mapped* collection that requires a `data_access` scope for Transfer to read or write it on your behalf. |
+| `:https` | You want to read or write files on the collection **directly over HTTPS**, rather than as a Transfer task between two collections. |
+
 ```bash
 alcf-tokens login --authorize-transfer <collection-uuid>:data_access
+alcf-tokens login --authorize-transfer <collection-uuid>:https
+alcf-tokens login --authorize-transfer <collection-uuid>:data_access:https
+```
+
+Be sure to include every collection you need authorized in one command.
+A transfer moves data *between* two collections, so authorize both of them in
+the same login -- for example, staging data from your ALCF home directory to a
+guest collection you upload to over HTTPS:
+
+```bash
+alcf-tokens login \
+  --authorize-transfer home \
+  --authorize-transfer <guest-collection-uuid>:https
 ```
 
 The following collection aliases are supported for convenience:
@@ -151,6 +173,38 @@ Use `alcf-tokens get-token inference` to print your token, and incorporate it in
 ### ALCF IRI API
 
 Use `alcf-tokens get-token iri` to print your token, and incorporate it into your request headers. See [ALCF docs](https://docs.alcf.anl.gov/services/iri-api/) for more details.
+
+### Automatically refreshing access tokens
+
+Rather than pasting tokens, Python callers can read the stored tokens directly.
+`alcf_tokens.auth` refreshes them as needed and raises `AuthError` when a login
+is necessary to proceed.
+
+```python
+from alcf_tokens.auth import get_access_token
+
+token = get_access_token("inference")
+```
+
+There are Authorizers for the Globus SDK clients too:
+
+```python
+from globus_sdk import TransferClient
+from alcf_tokens.auth import (
+    get_service_authorizer,   # any service in SERVICES, e.g. "inference"
+    get_transfer_authorizer,  # the Globus Transfer API
+    get_https_authorizer,     # direct HTTPS reads/writes on one collection
+)
+
+# Authorized at login with: --authorize-transfer home
+tc = TransferClient(authorizer=get_transfer_authorizer(["home"]))
+
+https_auth = get_https_authorizer(COLLECTION)
+headers = {"Authorization": str(https_auth.get_authorization_header())}
+```
+
+Pass `get_transfer_authorizer` the same collection entries you used at login, so
+that a missing consent is reported as such rather than as a Globus API error.
 
 
 ## 5. Standalone shell script (no dependencies)
