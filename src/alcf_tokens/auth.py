@@ -107,9 +107,12 @@ def _make_auth_params(service_name: str | None) -> globus_sdk.gare.GlobusAuthori
         policy = SERVICES[service_name].session_policy
         if policy:
             return globus_sdk.gare.GlobusAuthorizationParameters(
-                session_required_policies=[policy]
+                session_required_policies=[policy],
+                prompt="login",
             )
-    return globus_sdk.gare.GlobusAuthorizationParameters()
+    return globus_sdk.gare.GlobusAuthorizationParameters(
+        prompt="login",
+    )
 
 
 def login(
