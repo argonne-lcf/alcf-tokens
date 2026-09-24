@@ -39,6 +39,8 @@ class ServiceName(str, Enum):
     globus_compute = "globus-compute"
     globus_transfer = "globus-transfer"
 
+POLICY_ALL = "a128e981-c9a5-417a-97ab-8571c9831bff"
+
 SERVICES: dict[ServiceName, ServiceConfig] = {
     ServiceName.inference: ServiceConfig(
         resource_server="681c10cc-f684-4540-bcd7-0b4df3bc26ef",
@@ -113,16 +115,19 @@ def build_user_app(
 
 
 def _make_auth_params(service_name: ServiceName | None) -> globus_sdk.gare.GlobusAuthorizationParameters:
-    if service_name is not None:
+    if service_name is None:
+        policy = POLICY_ALL
+    else:
         policy = SERVICES[service_name].session_policy
-        if policy:
-            return globus_sdk.gare.GlobusAuthorizationParameters(
-                session_required_policies=[policy],
-                prompt="login",
-            )
-    return globus_sdk.gare.GlobusAuthorizationParameters(
-        prompt="login",
-    )
+    if policy:
+        return globus_sdk.gare.GlobusAuthorizationParameters(
+            session_required_policies=[policy],
+            prompt="login",
+        )
+    else:
+        return globus_sdk.gare.GlobusAuthorizationParameters(
+            prompt="login",
+        )
 
 
 def login(
