@@ -38,6 +38,7 @@ class ServiceName(str, Enum):
     iri = "iri"
     globus_compute = "globus-compute"
     globus_transfer = "globus-transfer"
+    globus_flows = "globus-flows"
 
 POLICY_ALL = "a128e981-c9a5-417a-97ab-8571c9831bff"
 
@@ -70,6 +71,16 @@ SERVICES: dict[ServiceName, ServiceConfig] = {
         description="Globus Transfer",
         documentation_url="https://www.globus.org/data-transfer",
     ),
+    ServiceName.globus_flows: ServiceConfig(
+        resource_server=globus_sdk.FlowsClient.scopes.resource_server,  # flows.globus.org
+        # FlowsClient's default scope requirement is `all` (it includes
+        # manage_flows), so request `all` here or the client's own requirement
+        # goes unmet at request time.
+        scope=globus_sdk.FlowsClient.scopes.all,
+        session_policy=None,
+        description="Globus Flows",
+        documentation_url="https://docs.globus.org/api/flows/",
+    )
 }
 
 SCOPE_RESOURCE_SERVERS: dict[ServiceName, str] = {
