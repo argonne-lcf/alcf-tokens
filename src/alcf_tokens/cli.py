@@ -58,6 +58,11 @@ def login(
             f"Known aliases: {', '.join(sorted(COLLECTION_ALIASES))}."
         ),
     ),
+    no_require_alcf_credentials: bool = typer.Option(
+        False,
+        "--no-require-alcf-credentials",
+        help="Skip the ALCF-wide session policy requirement (not allowed when specifying a service).",
+    ),
 ) -> None:
     """
     Log in with Globus. By default, triggers a single authentication flow that
@@ -68,7 +73,7 @@ def login(
         valid = ", ".join(sorted(SERVICES))
         typer.echo(f"Unknown service '{service}'. Valid values: {valid}", err=True)
         raise typer.Exit(code=1)
-    auth_login(service, authorize_transfer or None)
+    auth_login(service, authorize_transfer or None, no_require_alcf_credentials)
 
 
 @cli.command()

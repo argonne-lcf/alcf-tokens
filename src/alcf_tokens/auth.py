@@ -125,9 +125,14 @@ def build_user_app(
     )
 
 
-def _make_auth_params(service_name: ServiceName | None) -> globus_sdk.gare.GlobusAuthorizationParameters:
+def _make_auth_params(
+    service_name: ServiceName | None,
+    no_require_alcf_credentials: bool = False,
+) -> globus_sdk.gare.GlobusAuthorizationParameters:
+    if service_name is not None and no_require_alcf_credentials:
+        raise AuthError("--no-require-alcf-credentials is not allowed when a service is specified.")
     if service_name is None:
-        policy = POLICY_ALL
+        policy = None if no_require_alcf_credentials else POLICY_ALL
     else:
         policy = SERVICES[service_name].session_policy
     if policy:
@@ -144,9 +149,10 @@ def _make_auth_params(service_name: ServiceName | None) -> globus_sdk.gare.Globu
 def login(
     service_name: ServiceName | None = None,
     authorize_transfer: list[str] | None = None,
+    no_require_alcf_credentials: bool = False,
 ) -> None:
     build_user_app(service_name, authorize_transfer).login(
-        auth_params=_make_auth_params(service_name), force=True
+        auth_params=_make_auth_params(service_name, no_require_alcf_credentials), force=True
     )
 
 
