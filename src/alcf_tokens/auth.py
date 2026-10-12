@@ -39,6 +39,7 @@ class ServiceName(str, Enum):
     globus_compute = "globus-compute"
     globus_transfer = "globus-transfer"
     globus_flows = "globus-flows"
+    hermes_lab_gateway = "hermes/lab-gateway"
 
 POLICY_ALL = "a128e981-c9a5-417a-97ab-8571c9831bff"
 
@@ -80,6 +81,13 @@ SERVICES: dict[ServiceName, ServiceConfig] = {
         session_policy=None,
         description="Globus Flows",
         documentation_url="https://docs.globus.org/api/flows/",
+    ),
+    ServiceName.hermes_lab_gateway: ServiceConfig(
+        resource_server="489c0d03-76e3-4b4d-a019-50eb8106ef6a",
+        scope="https://auth.globus.org/scopes/489c0d03-76e3-4b4d-a019-50eb8106ef6a/all",
+        session_policy=None,
+        description="Hermes Lab Gateway",
+        documentation_url="https://docs.hermes.alcf.anl.gov/hermes",
     )
 }
 
